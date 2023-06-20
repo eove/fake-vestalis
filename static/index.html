@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>As a doctor</title>
+</head>
+<body>
+<h1>You are a doctor here</h1>
+<div>
+<label>Server</label>
+<input id="server"></input>
+</div>
+<div>
+<label>Numéro de série</label>
+<input id="serial" value="42"></input>
+</div>
+<button onclick="connect()">Connect</button>
+<div id="communicationArea" style="display: none">
+    <textarea name="message" id="message" cols="30" rows="10"></textarea>
+    <button onclick="send()">Send</button>
+    <br/>
+    <button onclick="disconnect()">Disconnect</button>
+    <h2>Received</h2>
+    <div id="received"></div>
+</div>
+<script src="fake-vestalis.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[global]
+port=8042
+
+[global.tls]
+certs = "security/server/ServerCertificate.crt"
+key = "security/server/ServerPrivate.key"
+
+[default.tls.mutual]
+ca_certs ="security/ca/CACertificate.pem"
+
+[development]
+address = "localhost"
+
+[staging]
+address = "0.0.0.0"
