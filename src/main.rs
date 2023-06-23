@@ -26,15 +26,15 @@ struct SignedData {
 
 #[get("/sign/<target>/<timestamp>")]
 fn hmac_sign(target: &str, timestamp: &str) -> Json<SignedData> {
+    let uuid = Uuid::new_v4().to_string();
     let json = format!(
-        r#"{{ "target":"{}", "timestamp":"{}" }}"#,
-        target, timestamp
+        r#"{{ "target":"{}", "timestamp":"{}", "uuid":"{}" }}"#,
+        target, timestamp, uuid
     );
     let mut mac = HmacSha512::new_from_slice(hmac_key().as_bytes()).unwrap();
     mac.update(json.as_bytes());
     let hash = mac.finalize();
     let token = encode(&base64::prelude::BASE64_STANDARD.encode(hash.into_bytes())).to_string();
-    let uuid = Uuid::new_v4().to_string();
     Json(SignedData { token, uuid })
 }
 
