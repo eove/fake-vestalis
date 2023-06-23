@@ -6,6 +6,7 @@ use base64::Engine;
 use hmac::{Hmac, Mac};
 use rocket::fs::FileServer;
 use rocket::serde::json::Json;
+use rocket::State;
 use serde::Serialize;
 use sha2::Sha512;
 use std::env;
@@ -38,9 +39,19 @@ fn hmac_sign(target: &str, timestamp: &str) -> Json<SignedData> {
     Json(SignedData { token, uuid })
 }
 
+struct ConnectName(String);
+
+#[get("/connect-name")]
+fn connect_name(name: &State<ConnectName>) -> Json<String> {
+    Json(name.0.clone())
+}
+
 #[launch]
 fn rocket() -> _ {
+    let name = env::var("CONNECT_NAME")
+        .expect("CONNECT_NAME should be set to know which hostname to call");
     rocket::build()
-        .mount("/", routes![hmac_sign])
+        .manage(ConnectName(name))
+        .mount("/", routes![hmac_sign, connect_name])
         .mount("/", FileServer::from("static/"))
 }
