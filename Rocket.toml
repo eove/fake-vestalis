@@ -8,8 +8,8 @@ key = "security/server/ServerPrivate.key"
 [default.tls.mutual]
 ca_certs ="security/ca/CACertificate.pem"
 
-[development]
-address = "localhost"
+[debug]
+address = "0.0.0.0"
 
 [staging]
 address = "0.0.0.0"
