@@ -3,21 +3,21 @@ extern crate rocket;
 extern crate serde;
 
 use base64::Engine;
-use hmac::{Hmac, Mac};
+use ed25519_dalek::pkcs8::DecodePrivateKey;
+use ed25519_dalek::{Signer, SigningKey};
 use rocket::fs::FileServer;
 use rocket::serde::json::Json;
 use rocket::State;
 use serde::Serialize;
-use serde_json::{json, to_string};
-use sha2::Sha512;
-use std::env;
+use std::{env, fs};
 use urlencoding::encode;
 use uuid::Uuid;
 
-type HmacSha512 = Hmac<Sha512>;
-
-fn hmac_key() -> String {
-    env::var("HMAC_KEY").expect("A key should be given for hmac computation") // TODO crash at startup
+fn read_private_key() -> SigningKey {
+    let path =
+        env::var("SIGNATURE_KEY").expect("SIGNATURE_KEY must be given for signing computation");
+    let public_key_bytes = fs::read_to_string(path).unwrap();
+    SigningKey::from_pkcs8_pem(&public_key_bytes).unwrap()
 }
 
 #[derive(Serialize)]
@@ -43,10 +43,9 @@ fn hmac_sign(target: &str, timestamp: &str) -> Json<SignedData> {
     };
     let json =
         base64::prelude::BASE64_STANDARD.encode(serde_json::to_string(&data_to_encode).unwrap());
-    let mut mac = HmacSha512::new_from_slice(hmac_key().as_bytes()).unwrap();
-    mac.update(json.as_bytes());
-    let hash = mac.finalize();
-    let signature = encode(&base64::prelude::BASE64_STANDARD.encode(hash.into_bytes())).to_string();
+    let key = read_private_key();
+    let signed = key.sign(&json.as_bytes());
+    let signature = encode(&base64::prelude::BASE64_STANDARD.encode(signed.to_bytes())).to_string();
     let data = encode(&json).to_string();
     Json(SignedData { signature, data })
 }
