@@ -16,8 +16,8 @@ const connect = async () => {
         now = new Date().toISOString();
     } // should be done server side, done here for testing purpose only
     let signature_response = await fetch(`/sign/${target}/${now}`);
-    let {signature, data} = await signature_response.json();
-    document.getElementById("eo-connect").src = `https://${server}/view/?data=${data}&signature=${signature}`
+    let {signature, data, nonce} = await signature_response.json();
+    document.getElementById("eo-connect").src = `https://${server}/view/?data=${data}&signature=${signature}&nonce=${nonce}`
 }
 const disconnect = () => {
     document.getElementById("eo-connect").src = 'about:blank';

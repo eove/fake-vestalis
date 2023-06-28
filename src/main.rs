@@ -2,6 +2,11 @@
 extern crate rocket;
 extern crate serde;
 
+use aes_gcm::aead::Aead;
+use aes_gcm::aead::OsRng;
+use aes_gcm::KeyInit;
+use aes_gcm::{AeadCore, Aes256Gcm};
+use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use ed25519_dalek::pkcs8::DecodePrivateKey;
 use ed25519_dalek::{Signer, SigningKey};
@@ -24,6 +29,7 @@ fn read_private_key() -> SigningKey {
 struct SignedData {
     signature: String,
     data: String,
+    nonce: String,
 }
 
 #[derive(Serialize, Debug)]
@@ -31,6 +37,18 @@ pub struct EncodedData<'r> {
     target: &'r str,
     timestamp: &'r str,
     uuid: &'r str,
+}
+
+fn encode_string_data(data: &str) -> (String, String) {
+    let key = env::var("CIPHER_KEY").unwrap();
+    let key = aes_gcm::Key::<Aes256Gcm>::from_slice(key.as_bytes());
+    let aes = Aes256Gcm::new(&key);
+    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let ciphertext = aes.encrypt(&nonce, data.as_bytes()).unwrap();
+    (
+        BASE64_STANDARD.encode(ciphertext),
+        BASE64_STANDARD.encode(nonce),
+    )
 }
 
 #[get("/sign/<target>/<timestamp>")]
@@ -41,13 +59,17 @@ fn hmac_sign(target: &str, timestamp: &str) -> Json<SignedData> {
         timestamp,
         uuid: uuid.as_str(),
     };
-    let json =
-        base64::prelude::BASE64_STANDARD.encode(serde_json::to_string(&data_to_encode).unwrap());
+    let json = serde_json::to_string(&data_to_encode).unwrap();
+    let (encrypted_json, nonce) = encode_string_data(&json);
     let key = read_private_key();
-    let signed = key.sign(&json.as_bytes());
-    let signature = encode(&base64::prelude::BASE64_STANDARD.encode(signed.to_bytes())).to_string();
-    let data = encode(&json).to_string();
-    Json(SignedData { signature, data })
+    let signed = key.sign(&encrypted_json.as_bytes());
+    let signature = encode(&BASE64_STANDARD.encode(signed.to_bytes())).to_string();
+    let data = encode(&encrypted_json).to_string();
+    Json(SignedData {
+        signature,
+        data,
+        nonce,
+    })
 }
 
 struct ConnectName(String);
