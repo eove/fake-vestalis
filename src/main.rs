@@ -65,6 +65,7 @@ fn hmac_sign(target: &str, timestamp: &str) -> Json<SignedData> {
     let signed = key.sign(&encrypted_json.as_bytes());
     let signature = encode(&BASE64_STANDARD.encode(signed.to_bytes())).to_string();
     let data = encode(&encrypted_json).to_string();
+    let nonce = encode(&nonce).to_string();
     Json(SignedData {
         signature,
         data,
