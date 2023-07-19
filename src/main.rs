@@ -17,7 +17,6 @@ use rocket::serde::json::Json;
 use rocket::State;
 use serde::Serialize;
 use std::{env, fs};
-use time::OffsetDateTime;
 use urlencoding::encode;
 use uuid::Uuid;
 
@@ -68,16 +67,12 @@ fn sign(
     }
 }
 
-#[get("/sign/<target>")]
-fn ed25519_sign(target: &str) -> Json<SignedData> {
+#[get("/sign/<target>/<timestamp>")]
+fn ed25519_sign(target: &str, timestamp: &str) -> Json<SignedData> {
     let uuid = Uuid::new_v4().to_string();
-    let now = OffsetDateTime::now_utc();
-    let timestamp = now
-        .format(&time::format_description::well_known::Iso8601::DEFAULT)
-        .unwrap();
     let data_to_encode = EncodedData {
         target,
-        timestamp: timestamp.as_str(),
+        timestamp,
         uuid: uuid.as_str(),
     };
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
