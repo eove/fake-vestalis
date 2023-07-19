@@ -55,3 +55,11 @@ Pour lancer le serveur, lancer la commande suivante :
 cargo run
 ```
 Le serveur sera alors accessible sur le port `8042`.
+
+## Lancer les tests
+
+L'exemple décrit par les spécifications a été implémenté en tant que test.
+Le test peut être lancé via :
+```shell
+cargo test
+```
