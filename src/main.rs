@@ -52,7 +52,7 @@ fn encode_string_data(data: &str) -> (String, String) {
 }
 
 #[get("/sign/<target>/<timestamp>")]
-fn hmac_sign(target: &str, timestamp: &str) -> Json<SignedData> {
+fn ed25519_sign(target: &str, timestamp: &str) -> Json<SignedData> {
     let uuid = Uuid::new_v4().to_string();
     let data_to_encode = EncodedData {
         target,
@@ -86,6 +86,6 @@ fn rocket() -> _ {
         .expect("CONNECT_NAME should be set to know which hostname to call");
     rocket::build()
         .manage(ConnectName(name))
-        .mount("/", routes![hmac_sign, connect_name])
+        .mount("/", routes![ed25519_sign, connect_name])
         .mount("/", FileServer::from("static/"))
 }
