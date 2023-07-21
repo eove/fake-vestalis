@@ -104,13 +104,9 @@ fn rocket() -> _ {
 
 #[cfg(test)]
 mod tests {
-    use crate::Aes256;
     use crate::{sign, EncodedData, SignedData};
-    use aes_gcm::aead::consts::U12;
     use aes_gcm::aead::Nonce;
-    use aes_gcm::{Aes256Gcm, AesGcm};
-    use base64::prelude::BASE64_STANDARD;
-    use base64::Engine;
+    use aes_gcm::Aes256Gcm;
     use ed25519_dalek::pkcs8::DecodePrivateKey;
     use ed25519_dalek::SigningKey;
     use spectral::assert_that;
@@ -119,11 +115,6 @@ mod tests {
     use time::format_description::well_known::Iso8601;
     use time::macros::datetime;
     use time::UtcOffset;
-
-    fn nonce_from(base64: &str) -> Nonce<AesGcm<Aes256, U12>> {
-        let nonce_bytes = BASE64_STANDARD.decode(base64).unwrap();
-        Nonce::<Aes256Gcm>::from_slice(nonce_bytes.as_slice()).clone()
-    }
 
     fn private_key(pem: &str) -> SigningKey {
         SigningKey::from_pkcs8_pem(pem).unwrap()
@@ -153,7 +144,10 @@ mod tests {
 MC4CAQAwBQYDK2VwBCIEIP2nQ8utZvjI6uZx+ruN6B+lKdajeI1LZuxLfrD3zrqH
 -----END PRIVATE KEY-----",
             ),
-            nonce_from("X2kotZ3wHHZlTfRd"),
+            Nonce::<Aes256Gcm>::from_slice(&[
+                0x5F, 0x69, 0x28, 0xB5, 0x9D, 0xF0, 0x1C, 0x76, 0x65, 0x4D, 0xF4, 0x5D,
+            ])
+            .clone(),
         );
         assert_that!(signed_data).is_equal_to(SignedData {
             data: "%2BPHZKrp64EWAlLvDLI6Yhl0oaY42I3Y8WMuPPC0ErS5IreNMAQGu9XH6Ax%2FpcL7aRyRmbPZYRhpQEPauiUJf2mBGnEfIiTF%2F15vB9gL9DFQtuGZ5OYG3LLe0XuWsuDIzhiOkY7zKjvgWSd4MfRShx8QXBNCi08ynK0WYtms%3D".to_string(),
