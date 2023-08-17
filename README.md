@@ -20,6 +20,13 @@ Trois variables d'environnement doivent être présente pour pouvoir lancer le s
 - CIPHER_KEY doit contenir la clé de chiffrement partagée entre Eove et Vestalis.
 - CONNECT_NAME doit contenir le nom du serveur eo-connect à utiliser.
 
+Le fichier `secrets.nix.template` donne les valeurs à utiliser en cas d'utilisation locale et peut être copie en `secrets.nix` pour être chargé automatiquement par nix.
+
+## Génération des secrets
+
+Pour une utilisation standard (en local), des secrets ont été commités, ainsi aucune génération n'est nécessaire.
+Les scripts de génération sont toute fois documentés à toute fin utiles.
+
 ### Clé de signature
 
 Les clés de signature ed25519 peuvent être générées via :
@@ -37,6 +44,7 @@ La commande :
 bash ./scripts/generate-ca.sh
 ```
 Crée une autorité dans le  dossier `security/ca`.
+Le mot de passe de l'autorité commité est `iMe*Fa$YJ3$E%^psDUMQA9Swc2AT8q`
 
 La commande :
 ```shell
